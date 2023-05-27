@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Not Defteri</title>
+  <style>
+    .container {
+      margin: 20px;
+    }
+    textarea {
+      width: 100%;
+    }
+    .button-container {
+      margin-top: 10px;
+    }
+    button {
+      margin-right: 10px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      color: #ffffff;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .button-container button.mod-toggle.dark-mode {
+      background-color: #3295f1;
+    }
+    .button-container button.mod-toggle.light-mode {
+      background-color: #2bc0ff;
+    }
+    .button-container button.mod-toggle {
+      background-color: #2eb9e3;
+    }
+    .button-container button.kaydet {
+      background-color: #2ecc71;
+    }
+   .button-container button.guncelle {
+      background-color: #3498db;
+    }
+    .button-container button.sil {
+      background-color: #e74c3c;
+    }
+    .button-container button.tumunu-sil {
+      background-color: #f39c12;
+    }
+    .notlar {
+      margin-top: 20px;
+    }
+    .notlar li {
+      cursor: pointer;
+      margin-bottom: 5px;
+    }
+    .notlar li:hover {
+      background-color: #f0f0f0;
+    }
+    /* Koyu Modda hangi renk olsunlar  */
+    body.dark-mode {
+      background-color: #000000;
+      color: #ffffff;
+    }
+    body.dark-mode textarea {
+      background-color: #000000;
+      color: #ffffff;
+    }
+    body.dark-mode .button-container button {
+      color: #ffffff;
+    }
+    body.dark-mode .button-container button.mod-toggle {
+      background-color: #555555;
+    }
+    body.dark-mode .notlar {
+      background-color: #000000;
+    }
+    body.dark-mode .notlar li:hover {
+      background-color: #383838;
+    }
+    /* Gündüz Modu */
+    body.light-mode {
+      background-color: #ffffff;
+      color: #000000;
+    }
+    body.light-mode textarea {
+      background-color: #ffffff;
+      color: #000000;
+    }
+    body.light-mode .button-container button {
+      color: #ffffff;
+    }
+    body.light-mode .button-container button.mod-toggle {
+      background-color: #f39c12;
+    }
+    .mod-toggle {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      z-index: 9999;
+    }
+    .mod-toggle button {
+      padding: 5px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      outline: none;
+      transition: background-color 0.3s ease;
+    }
+    .mod-toggle button.mod-toggle-icon {
+      width: 20px;
+      height: 20px;
+      background-color: transparent;
+      position: relative;
+    }
+    .mod-toggle button.mod-toggle-icon::before,
+    .mod-toggle button.mod-toggle-icon::after {
+      content: "";
+      width: 10px;
+      height: 2px;
+      background-color: #ffffff;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      transition: background-color 0.3s ease;
+    }
+    .mod-toggle button.mod-toggle-icon::before {
+      transform: translate(-50%, -50%) rotate(-45deg);
+    }
+    .mod-toggle button.mod-toggle-icon::after {
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+    .mod-toggle.dark-mode button.mod-toggle-icon {
+      background-color: #555555;
+    }
+    .mod-toggle.dark-mode button.mod-toggle-icon::before,
+    .mod-toggle.dark-mode button.mod-toggle-icon::after {
+      background-color: #ffffff;
+    }
+    .mod-toggle.light-mode button.mod-toggle-icon {
+      background-color: #f39c12;
+    }
+
+    .mod-toggle.light-mode button.mod-toggle-icon::before,
+    .mod-toggle.light-mode button.mod-toggle-icon::after {
+      background-color: #ffffff;
+    }
+  </style>
+</head>
+<h1 id="myTime"></h1>
+
+<script>
+    var today = new Date();
+    var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+    var dateTime = date+' '+time;
+    document.getElementById("myTime").innerHTML = dateTime;
+</script>
+
+<body class="light-mode">
+  <div class="container">
+    <h2><mark>||</mark>Notmatix<mark>||</mark></h2>
+    <div style="position: absolute; top: 0; right: 0;">
+      <button id="modButton" onclick="toggleMod()" style="background-color: rgba(219, 225, 46, 0.678); color: rgb(255, 255, 255);">Modu Değiştir</button></div>
+
+  <!-- Normal ve  Şifreli Notlar aynı div içinde yazdık ki aynı hizada olsunlar. -->
+    <textarea id="notTextArea" rows="15" cols="40"></textarea>
+    <div class="button-container">
+      <button class="kaydet" onclick="kaydet()">Kaydet</button>
+      <button class="guncelle" onclick="guncelle()">Güncelle</button>
+      <button class="sil" onclick="sil()">Sil</button>
+      <button class="tumunu-sil" onclick="tumunuSil()">Tümünü Sil</button>
+      <h3>Şifreli Notlar</h3>
+      <textarea id="sifreliNotTextArea" rows="10" cols="30"></textarea>
+      <div class="button-container">
+       <button class="kaydet" onclick="sifreliKaydet()">Şifreli Kaydet</button>
+       <button class="sil" onclick="sifreliSil()">Şifreli Sil</button>
+    </div>
+    <ul class="notlar" id="notListesi"></ul>
+    <ul class="notlar" id="sifreliNotListesi"></ul>
+  <script>
+    var isDarkMode = false;
+    var sifreliNotlar = [];
+
+    function sifreliKaydet() {
+    var sifre = prompt("Lütfen bir şifre girin:");
+    if (sifre) {
+        var sifreliNotTextArea = document.getElementById("sifreliNotTextArea");
+        sifreliNotIcerik = sifreliNotTextArea.value;
+
+        if (sifreliNotIcerik.trim() !== "") {
+            var li = document.createElement("li");
+            li.innerHTML = "*****";
+            li.onclick = function() {
+                var girilenSifre = prompt("Lütfen şifrenizi girin:");
+                if (girilenSifre === sifre) {
+                    sifreliNotTextArea.value = sifreliNotIcerik;
+                } else {
+                    alert("Yanlış şifre!");
+                }
+            };
+
+            document.getElementById("sifreliNotListesi").appendChild(li);
+
+            sifreliNotlar.push({
+                icerik: sifreliNotIcerik,
+                sifre: sifre
+            });
+            fs.writeFileSync('sifreliNotlar.json', JSON.stringify(sifreliNotlar));
+
+            sifreliNotTextArea.value = "";
+
+            alert("Şifreli not başarıyla kaydedildi!");
+        } else {
+            alert("Lütfen bir not girin!");
+        }
+    } else {
+        alert("Lütfen bir şifre girin!");
+    }
+}
+
+function updateTime() {
+    var today = new Date();
+    var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+    var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+    var dateTime = date+' '+time;
+    document.getElementById("myTime").innerHTML = dateTime;
+}
+setInterval(updateTime, 1000);
+;
+var notes = [];
+
+function sifreliSil() {
+    var sifre = prompt("Lütfen şifrenizi girin:");
+    if (sifre) {
+        var sifreliNotTextArea = document.getElementById("sifreliNotTextArea");
+        var li = document.getElementById("sifreliNotListesi").querySelector("li:not(.guncelleme)");
+
+        if (li) {
+            var index = Array.prototype.indexOf.call(li.parentNode.children, li);
+            if (sifre === sifreliNotlar[index].sifre) {
+                var confirmDelete = confirm("Bu şifreli notu silmek istediğinize emin misiniz?");
+                if (confirmDelete) {
+                    li.remove();
+                    sifreliNotTextArea.value = "";
+                    sifreliNotlar.splice(index, 1);
+                    fs.writeFileSync('sifreliNotlar.json', JSON.stringify(sifreliNotlar));
+                    alert("Şifreli not silindi!");
+                }
+            } else {
+                alert("Yanlış şifre!");
+            }
+        } else {
+            alert("Önce bir not seçin!");
+        }
+    } else {
+        alert("Lütfen bir şifre girin!");
+    }
+}
+
+    function toggleMod() {
+      var body = document.body;
+      var modButton = document.getElementById("modButton");
+
+      if (isDarkMode) {
+        body.classList.remove("dark-mode");
+        body.classList.add("light-mode");
+        modButton.classList.remove("dark-mode");
+      } else {
+        body.classList.remove("light-mode");
+        body.classList.add("dark-mode");
+        modButton.classList.add("dark-mode");
+      }
+
+      isDarkMode = !isDarkMode;
+    }
+
+    function kaydet() {
+    var notTextArea = document.getElementById("notTextArea");
+    var notIcerik = notTextArea.value;
+
+    if (notIcerik.trim() !== "") {
+        var today = new Date();
+        var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+        var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+        var dateTime = date+' '+time;
+        var note = {
+            text: notIcerik,
+            timestamp: dateTime
+        };
+        notes.push(note);
+
+        var li = document.createElement("li");
+        li.innerHTML = notIcerik + " (" + dateTime + ")";
+        li.onclick = function() {
+            notTextArea.value = this.innerHTML;
+        };
+ 
+        document.getElementById("notListesi").appendChild(li);
+
+        notTextArea.value = "";
+        localStorage.setItem("notlar", JSON.stringify(notes));
+
+        alert("Not başarıyla kaydedildi!");
+    } else {
+        alert("Lütfen bir not girin!");
+    }
+}
+
+function guncelle() {
+ var notTextArea = document.getElementById("notTextArea");
+ var notIcerik = notTextArea.value;
+
+ if (notIcerik.trim() !== "") {
+ var li = document.getElementById("notListesi").querySelector("li:not(.guncelleme)");
+ if (li) {
+ var today = new Date();
+ var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+ var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+ var dateTime = date+' '+time;
+ li.innerHTML = notIcerik + " (" + dateTime + ")";
+ notTextArea.value = "";
+ li.classList.remove("guncelleme");
+
+ var index = Array.prototype.indexOf.call(li.parentNode.children, li);
+ notes[index].text = notIcerik;
+ notes[index].timestamp = dateTime;
+ localStorage.setItem("notlar", JSON.stringify(notes));
+
+ alert("Not güncellendi!");
+ } else {
+ alert("Önce bir not seçin!");
+ }
+ } else {
+ alert("Lütfen bir not girin!");
+ }
+}
+
+    function sil() {
+      var notTextArea = document.getElementById("notTextArea");
+      var li = document.getElementById("notListesi").querySelector("li:not(.guncelleme)");
+
+      if (li) {
+        var confirmDelete = confirm("Bu notu silmek istediğinize emin misiniz?");
+        if (confirmDelete) {
+          li.remove();
+          notTextArea.value = "";
+          localStorage.setItem("notlar", document.getElementById("notListesi").innerHTML);
+
+          alert("Not silindi!");
+        }
+      } else {
+        alert("Önce bir not seçin!");
+      }
+    }
+
+    function tumunuSil() {
+      var confirmDelete = confirm("Tüm notları silmek istediğinize emin misiniz?");
+      var notListesi = document.getElementById("notListesi");
+      notListesi.innerHTML = "";
+      localStorage.setItem("notlar", "");
+      alert("Tüm notlar silindi!");
+    }
+    var notes = [];
+    var sifreliNotlar = [];
+
+window.onload = function() {
+ var kayitliSifreliNotlar = JSON.parse(localStorage.getItem("sifreliNotlar"));
+ if (kayitliSifreliNotlar) {
+ sifreliNotlar = kayitliSifreliNotlar;
+ kayitliSifreliNotlar.forEach(function(not) {
+ var li = document.createElement("li");
+ li.innerHTML = "*****";
+ li.onclick = function() {
+ var girilenSifre = prompt("Lütfen şifrenizi girin:");
+ if (girilenSifre === not.sifre) {
+ document.getElementById("sifreliNotTextArea").value = not.icerik;
+ } else {
+ alert("Yanlış şifre!");
+ }
+ };
+ document.getElementById("sifreliNotListesi").appendChild(li);
+ });
+ }
+ var kayitliSifresizNotlar = JSON.parse(localStorage.getItem("notlar"));
+ if (kayitliSifresizNotlar) {
+ notes = kayitliSifresizNotlar;
+ kayitliSifresizNotlar.forEach(function(not) {
+ var li = document.createElement("li");
+ li.innerHTML = not.text + " (" + not.timestamp + ")";
+ li.onclick = function() {
+ document.getElementById("notTextArea").value = this.innerHTML;
+ };
+ document.getElementById("notListesi").appendChild(li);
+ });
+ }
+};
+  </script>
+</body>
+</html>
